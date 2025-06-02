@@ -26,32 +26,45 @@ class BlogPostController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'excerpt' => 'nullable|string|max:500',
-            'category_id' => 'required|exists:blog_categories,id',
-            'image' => 'nullable|image|mimes:jpg,png,jpeg,gif|max:2048',
-            'is_published' => 'boolean',
-        ]);
+        \Log::info('Store method started', ['request_data' => $request->all()]);
 
-        $post = new BlogPost();
-        $post->title = $validated['title'];
-        $post->slug = Str::slug($validated['title']);
-        $post->content = $validated['content'];
-        $post->excerpt = $validated['excerpt'] ?? Str::limit(strip_tags($validated['content']), 200);
-        $post->category_id = $validated['category_id'];
-        $post->user_id = Auth::id();
-        $post->is_published = $request->has('is_published');
-        $post->published_at = $request->has('is_published') ? now() : null;
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'content' => 'required|string',
+                'excerpt' => 'nullable|string|max:500',
+                'category_id' => 'required|exists:blog_categories,id',
+                'image' => 'nullable|image|mimes:jpg,png,jpeg,gif|max:2048',
+                'is_published' => 'nullable|in:on',
+            ]);
 
-        if ($request->hasFile('image')) {
-            $post->image = $request->file('image')->store('blog-images', 'public');
+            \Log::info('Validation passed', ['validated_data' => $validated]);
+
+            $post = new BlogPost();
+            $post->title = $validated['title'];
+            $post->slug = Str::slug($validated['title']);
+            $post->content = $validated['content'];
+            $post->excerpt = $validated['excerpt'] ?? Str::limit(strip_tags($validated['content']), 200);
+            $post->category_id = $validated['category_id'];
+            $post->user_id = Auth::id();
+            $post->is_published = $request->has('is_published');
+            $post->published_at = $request->has('is_published') ? now() : null;
+
+            if ($request->hasFile('image')) {
+                $post->featured_image = $request->file('image')->store('blog-images', 'public'); // Save to featured_image
+            }
+
+            \Log::info('About to save post', ['post_data' => $post->toArray()]);
+
+            $post->save();
+
+            \Log::info('Post saved', ['post_id' => $post->id]);
+
+            return redirect()->route('admin.blog.index')->with('success', 'Blog post created successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Error in store method', ['error' => $e->getMessage()]);
+            throw $e;
         }
-
-        $post->save();
-
-        return redirect()->route('admin.blog.index')->with('success', 'Blog post created successfully.');
     }
 
     public function show(BlogPost $blog)
@@ -69,39 +82,52 @@ class BlogPostController extends Controller
 
     public function update(Request $request, BlogPost $blog)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'excerpt' => 'nullable|string|max:500',
-            'category_id' => 'required|exists:blog_categories,id',
-            'image' => 'nullable|image|mimes:jpg,png,jpeg,gif|max:2048',
-            'is_published' => 'boolean',
-        ]);
+        \Log::info('Update method started', ['request_data' => $request->all()]);
 
-        $blog->title = $validated['title'];
-        $blog->slug = Str::slug($validated['title']);
-        $blog->content = $validated['content'];
-        $blog->excerpt = $validated['excerpt'] ?? Str::limit(strip_tags($validated['content']), 200);
-        $blog->category_id = $validated['category_id'];
-        $blog->is_published = $request->has('is_published');
-        $blog->published_at = $request->has('is_published') ? now() : null;
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'content' => 'required|string',
+                'excerpt' => 'nullable|string|max:500',
+                'category_id' => 'required|exists:blog_categories,id',
+                'image' => 'nullable|image|mimes:jpg,png,jpeg,gif|max:2048',
+                'is_published' => 'nullable|in:on', // Accept 'on' for checkbox
+            ]);
 
-        if ($request->hasFile('image')) {
-            if ($blog->image) {
-                Storage::disk('public')->delete($blog->image);
+            \Log::info('Validation passed', ['validated_data' => $validated]);
+
+            $blog->title = $validated['title'];
+            $blog->slug = Str::slug($validated['title']);
+            $blog->content = $validated['content'];
+            $blog->excerpt = $validated['excerpt'] ?? Str::limit(strip_tags($validated['content']), 200);
+            $blog->category_id = $validated['category_id'];
+            $blog->is_published = $request->has('is_published');
+            $blog->published_at = $request->has('is_published') ? now() : null;
+
+            if ($request->hasFile('image')) {
+                \Log::info('Image upload detected', ['file' => $request->file('image')->getClientOriginalName()]);
+                if ($blog->featured_image) { // Use featured_image consistently
+                    Storage::disk('public')->delete($blog->featured_image);
+                }
+                $blog->featured_image = $request->file('image')->store('blog-images', 'public');
             }
-            $blog->image = $request->file('image')->store('blog-images', 'public');
+
+            \Log::info('About to update post', ['post_data' => $blog->toArray()]);
+            $blog->save();
+
+            \Log::info('Post updated', ['post_id' => $blog->id]);
+
+            return redirect()->route('admin.blog.index')->with('success', 'Blog post updated successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Error in update method', ['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
-
-        $blog->save();
-
-        return redirect()->route('admin.blog.index')->with('success', 'Blog post updated successfully.');
     }
 
     public function destroy(BlogPost $blog)
     {
-        if ($blog->image) {
-            Storage::disk('public')->delete($blog->image);
+        if ($blog->featured_image) {
+            Storage::disk('public')->delete($blog->featured_image);
         }
         $blog->delete();
         return redirect()->route('admin.blog.index')->with('success', 'Blog post deleted successfully.');

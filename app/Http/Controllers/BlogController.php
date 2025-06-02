@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BlogPost;
 use Artesaos\SEOTools\Facades\SEOMeta;
 use Artesaos\SEOTools\Facades\OpenGraph;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class BlogController extends Controller
 {
@@ -13,23 +16,16 @@ class BlogController extends Controller
      */
     public function index()
     {
-        //
-    }
+        Log::info('BlogController::index called');
+        $posts = BlogPost::where('is_published', true)->with('category')->latest()->get();
+        Log::info('Posts retrieved', ['count' => $posts->count(), 'posts' => $posts->toArray()]);
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
+        SEOMeta::setTitle('Shiela Blog');
+        SEOMeta::setDescription('Explore the latest blog posts on Shiela Blog, covering various topics and insights.');
+        OpenGraph::setTitle('Shiela Blog');
+        OpenGraph::setDescription('Explore the latest blog posts on Shiela Blog, covering various topics and insights.');
 
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+        return view('blog.index', compact('posts'));
     }
 
     /**
@@ -37,7 +33,8 @@ class BlogController extends Controller
      */
     public function show($slug)
     {
-        $post = BlogPost::where('slug', $slug)->firstOrFail();
+        $post = BlogPost::where('slug', $slug)->where('is_published', true)->with('category')->firstOrFail();
+        Log::info('Post retrieved', ['slug' => $slug, 'post' => $post->toArray()]);
 
         SEOMeta::setTitle($post->title . ' - Shiela Blog');
         SEOMeta::setDescription(Str::limit(strip_tags($post->content), 160));
@@ -49,29 +46,5 @@ class BlogController extends Controller
         return view('blog.show', compact('post'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-
-
+    // Other methods (create, store, edit, update, destroy) can remain empty if handled by BlogPostController
 }

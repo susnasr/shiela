@@ -13,10 +13,10 @@ class PostSeeder extends Seeder
     {
         // Seed blog categories
         $blogCategories = [
-            ['name' => 'General', 'description' => 'General topics and updates'],
-            ['name' => 'Trendy', 'description' => 'Trend news and innovations'],
-            ['name' => 'Lifestyle', 'description' => 'Lifestyle and wellbeing'],
-            ['name' => 'Fashion', 'description' => 'Fashion trends and style guides'],
+            ['name' => 'General',],
+            ['name' => 'Trendy', ],
+            ['name' => 'Lifestyle', ],
+            ['name' => 'Fashion',],
         ];
 
         $createdCategories = [];
@@ -25,7 +25,6 @@ class PostSeeder extends Seeder
             $createdCategory = BlogCategory::create([
                 'name' => $category['name'],
                 'slug' => Str::slug($category['name']),
-                'description' => $category['description'],
             ]);
         }
     }

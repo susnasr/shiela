@@ -1,56 +1,46 @@
-@extends('layouts.guest')
+@extends('layouts.app')
 
 @section('content')
-    <div class="w-full">
-        <h1 class="text-2xl font-bold text-center mb-6">SHIELA Blog</h1>
-
-        @if (session('success'))
-            <div class="mb-4 text-center text-green-600 text-sm">
-                {{ session('success') }}
+    <div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="relative mb-12">
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-100 to-pink-100 opacity-50 rounded-3xl blur-xl"></div>
+            <div class="relative bg-white bg-opacity-95 backdrop-blur-lg shadow-lg rounded-3xl p-8 border border-gray-100">
+                <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">Shiela Blog</h1>
+                <p class="mt-2 text-lg text-gray-600">Explore our latest insights and stories.</p>
             </div>
-        @endif
+        </div>
 
-        <!-- Category Filter (if implemented) -->
-        @if (count($categories ?? []) > 0)
-            <div class="mb-4 text-center">
-                <select name="category" id="category" class="border-gray-300 rounded p-2" onchange="window.location.href=this.value">
-                    <option value="{{ route('blog.index') }}">All Categories</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ route('blog.category', $category->slug) }}" {{ request()->routeIs('blog.category') && request()->category === $category->slug ? 'selected' : '' }}>
-                            {{ $category->name }}
-                        </option>
+        <!-- Blog Posts Grid -->
+        <div class="relative">
+            @if ($posts->isEmpty())
+                <div class="bg-white bg-opacity-95 backdrop-blur-md shadow-md rounded-2xl p-8 border-l-4 border-blue-200">
+                    <p class="text-gray-600">No blog posts found.</p>
+                </div>
+            @else
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @foreach ($posts as $post)
+                        <div class="relative bg-white bg-opacity-95 backdrop-blur-md shadow-md rounded-2xl overflow-hidden border-l-4 border-blue-200 hover:shadow-lg transition-shadow duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-pink-50 opacity-20 rounded-2xl"></div>
+                            @if ($post->featured_image)
+                                <img src="{{ asset('storage/' . $post->featured_image) }}" alt="{{ $post->title }}" class="w-full h-48 object-cover">
+                            @else
+                                <img src="{{ asset('images/default-blog.jpg') }}" alt="Placeholder" class="w-full h-48 object-cover">
+                            @endif
+                            <div class="relative p-6">
+                                <h2 class="text-xl font-semibold text-gray-800 mb-2">
+                                    <a href="{{ route('blog.show', $post->slug) }}" class="text-blue-600 hover:underline">{{ $post->title }}</a>
+                                </h2>
+                                <p class="text-gray-600 mb-4">{{ $post->excerpt ?? Str::limit(strip_tags($post->content), 150) }}</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-500">{{ $post->category->name ?? 'Uncategorized' }}</span>
+                                    <span class="text-sm text-gray-500">{{ $post->published_at ? $post->published_at->format('M d, Y') : 'Not Published' }}</span>
+                                </div>
+                            </div>
+                        </div>
                     @endforeach
-                </select>
-            </div>
-        @endif
-
-        @forelse ($posts as $post)
-            <div class="mb-4 p-4 bg-white shadow rounded">
-                <h2 class="text-xl font-semibold">{{ $post->title }}</h2>
-                <p class="text-gray-600">{{ Str::limit($post->content, 150) }}</p>
-                <a href="{{ route('blog.show', $post->slug) }}" class="text-blue-600 hover:underline">Read more</a>
-                @auth
-                    <a href="{{ route('blog.edit', $post->slug) }}" class="ml-4 text-blue-600 hover:underline">Edit</a>
-                    <form action="{{ route('blog.destroy', $post->slug) }}" method="POST" class="inline-block ml-2" onsubmit="return confirm('Are you sure?');">
-                        @csrf
-                        @method('DELETE')
-                        <x-primary-button type="submit" class="bg-red-600 hover:bg-red-700 text-sm py-1 px-2">Delete</x-primary-button>
-                    </form>
-                @endauth
-            </div>
-        @empty
-            <p class="text-center">No posts available yet.</p>
-        @endforelse
-
-        @auth
-            <a href="{{ route('blog.create') }}" class="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add New Post</a>
-        @endauth
-
-        <!-- Pagination (if used) -->
-        @if ($posts instanceof \Illuminate\Pagination\LengthAwarePaginator)
-            <div class="mt-4 text-center">
-                {{ $posts->links() }}
-            </div>
-        @endif
+                </div>
+            @endif
+        </div>
     </div>
 @endsection
