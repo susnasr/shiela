@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\{
     DashboardController as AdminDashboardController,
     ProductController as AdminProductController,
     OrderController as AdminOrderController,
+    BlogPostController,
     BlogCategoryController,
 };
 use Illuminate\Support\Facades\Log;
@@ -26,16 +27,16 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-
 // Admin blog routes
-Route::prefix('admin')->middleware(['auth'])->group(function () {
-    Route::resource('blog', BlogController::class)->names('admin.blog');
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::resource('blog', BlogPostController::class)->names('admin.blog');
+    Route::resource('blog-categories', BlogCategoryController::class)->names('admin.blog-categories');
 });
+
 // Public blog routes
 Route::controller(PublicBlogController::class)->group(function () {
     Route::get('/blog', 'index')->name('blog.index');
     Route::get('/blog/{slug}', 'show')->name('blog.show');
-
 });
 
 Route::controller(FrontendProductController::class)->group(function () {
@@ -90,7 +91,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])
         ->name('orders.updateStatus');
     Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
-
 });
 
 require __DIR__.'/auth.php';
