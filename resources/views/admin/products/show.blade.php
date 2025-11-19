@@ -61,8 +61,19 @@
                     </div>
                     @if($product->image)
                         <div class="sm:col-span-2">
-                            <label class="block text-sm font-semibold text-gray-700">Image</label>
-                            <img src="{{ $product->main_image }}" alt="{{ $product->name }}" class="mt-2 h-48 w-auto rounded-lg shadow-sm">
+                            <label class="block text-sm font-semibold text-gray-700">Product Image</label>
+                            <div class="mt-3 p-4 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                                <img src="{{ asset('storage/' . $product->image) }}"
+                                     alt="{{ $product->name }}"
+                                     class="max-h-96 w-auto mx-auto rounded-lg shadow-lg object-cover">
+                            </div>
+                        </div>
+                    @else
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700">Product Image</label>
+                            <div class="mt-3 p-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 text-center text-gray-500">
+                                No image uploaded
+                            </div>
                         </div>
                     @endif
                     @if($product->trashed())

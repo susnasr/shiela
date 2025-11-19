@@ -77,6 +77,7 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'status' => 'required|in:draft,published,archived',
             'is_featured' => 'boolean'
+
         ]);
 
         $validated['stock_quantity'] = $validated['stock'];
@@ -116,6 +117,7 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'status' => 'required|in:draft,published,archived',
             'is_featured' => 'boolean'
+
         ]);
 
         $validated['stock_quantity'] = $validated['stock'];

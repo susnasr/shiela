@@ -51,7 +51,7 @@ class BlogPostController extends Controller
             $post->published_at = $request->has('is_published') ? now() : null;
 
             if ($request->hasFile('image')) {
-                $post->featured_image = $request->file('image')->store('blog-images', 'public'); // Save to featured_image
+                $post->featured_image = $request->file('image')->store('blog-images', 'public');
             }
 
             \Log::info('About to save post', ['post_data' => $post->toArray()]);
@@ -91,7 +91,7 @@ class BlogPostController extends Controller
                 'excerpt' => 'nullable|string|max:500',
                 'category_id' => 'required|exists:blog_categories,id',
                 'image' => 'nullable|image|mimes:jpg,png,jpeg,gif|max:2048',
-                'is_published' => 'nullable|in:on', // Accept 'on' for checkbox
+                'is_published' => 'nullable|in:on',
             ]);
 
             \Log::info('Validation passed', ['validated_data' => $validated]);
@@ -106,7 +106,7 @@ class BlogPostController extends Controller
 
             if ($request->hasFile('image')) {
                 \Log::info('Image upload detected', ['file' => $request->file('image')->getClientOriginalName()]);
-                if ($blog->featured_image) { // Use featured_image consistently
+                if ($blog->featured_image) {
                     Storage::disk('public')->delete($blog->featured_image);
                 }
                 $blog->featured_image = $request->file('image')->store('blog-images', 'public');
