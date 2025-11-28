@@ -23,8 +23,6 @@ class ProductController extends Controller
                 $query->where('name', 'like', '%' . $searchQuery . '%');
             });
 
-
-
         if ($request->has('category')) {
             $category = Category::where('slug', $request->get('category'))->firstOrFail();
             $selectedCategory = $category->slug;
@@ -58,5 +56,21 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * Show single product page - ADDED THIS METHOD
+     */
+    public function show($product)
+    {
+        // Find product by ID or slug
+        $product = Product::where('id', $product)
+            ->orWhere('slug', $product)
+            ->where('status', 'published')
+            ->with(['category', 'activeDiscounts'])
+            ->firstOrFail();
 
+        // Increment views count
+//        $product->increment('views');
+
+        return view('products.show', compact('product'));
+    }
 }

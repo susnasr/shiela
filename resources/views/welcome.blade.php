@@ -1,11 +1,22 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SHIELA - Official outfit site of Exalters</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Theme Script -->
+    <script>
+        // Check for saved theme preference or default to system
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
     <style>
         .hero {
             background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
@@ -23,10 +34,11 @@
         .body-font { font-family: 'Montserrat', sans-serif; }
     </style>
 </head>
-<body class="body-font min-h-screen flex flex-col bg-gray-50">
+<body class="body-font min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
 
 @include('layouts.header')
 
+<!-- Hero Section -->
 <div class="hero">
     <div class="max-w-4xl px-6">
         <h1 class="text-5xl md:text-7xl font-bold mb-6 brand-font leading-tight">
@@ -40,34 +52,35 @@
     </div>
 </div>
 
-<section class="container mx-auto px-6 py-20 flex-1">
-    <h2 class="text-4xl md:text-5xl font-bold text-center mb-16 brand-font">Featured Collection</h2>
+<!-- Featured Products Section -->
+<section class="container mx-auto px-6 py-20 flex-1 bg-gray-50 dark:bg-gray-900">
+    <h2 class="text-4xl md:text-5xl font-bold text-center mb-16 brand-font text-gray-900 dark:text-white">Featured Collection</h2>
 
     @if($featuredProducts->count())
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             @foreach($featuredProducts as $product)
-                <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 overflow-hidden group">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300 overflow-hidden group border border-gray-200 dark:border-gray-700">
                     <a href="{{ route('products.show', $product->slug) }}">
-                        <div class="aspect-square bg-gray-100 overflow-hidden">
+                        <div class="aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden">
                             <img src="{{ $product->image ? asset('storage/' . $product->image) : 'https://via.placeholder.com/400x400?text=SHIELA' }}"
                                  alt="{{ $product->name }}"
                                  class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                         </div>
                     </a>
                     <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-2">
-                            <a href="{{ route('products.show', $product->slug) }}" class="hover:text-gray-600 transition">
+                        <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                            <a href="{{ route('products.show', $product->slug) }}" class="hover:text-gray-600 dark:hover:text-gray-300 transition">
                                 {{ $product->name }}
                             </a>
                         </h3>
-                        <p class="text-2xl font-bold text-gray-900">${{ number_format($product->price, 2) }}</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">${{ number_format($product->price, 2) }}</p>
                         @if($product->category)
-                            <span class="text-sm text-gray-500">{{ $product->category->name }}</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ $product->category->name }}</span>
                         @endif
 
                         <form action="{{ route('cart.add', $product->id) }}" method="POST" class="mt-5">
                             @csrf
-                            <button type="submit" class="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition font-medium">
+                            <button type="submit" class="w-full bg-black dark:bg-white text-white dark:text-black py-3 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition font-medium">
                                 Add to Cart
                             </button>
                         </form>
@@ -77,12 +90,12 @@
         </div>
 
         <div class="text-center mt-16">
-            <a href="{{ route('products.index') }}" class="inline-block px-10 py-4 bg-black text-white text-lg font-medium rounded-lg hover:bg-gray-800 transition">
+            <a href="{{ route('products.index') }}" class="inline-block px-10 py-4 bg-black dark:bg-white text-white dark:text-black text-lg font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition">
                 View All Products
             </a>
         </div>
     @else
-        <p class="text-center text-xl text-gray-600">No featured products yet. Check back soon!</p>
+        <p class="text-center text-xl text-gray-600 dark:text-gray-400">No featured products yet. Check back soon!</p>
     @endif
 </section>
 
